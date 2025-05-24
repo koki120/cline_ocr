@@ -21,7 +21,7 @@ export function generateToken(username: string): string {
   return jwt.sign(
     { username, iat: Math.floor(Date.now() / 1000) },
     JWT_SECRET as string,
-    { expiresIn: '7d' } // Token expires in 7 days
+    { expiresIn: '7d', algorithm: 'HS256' } // Token expires in 7 days
   );
 }
 
@@ -41,24 +41,19 @@ export function verifyToken(token: string): string | null {
 /**
  * Check if the provided password matches the hashed password
  */
-export function checkPassword(input: string, hash: string): boolean {
-  try {
-    return bcrypt.compareSync(input, hash);
-  } catch (error) {
-    console.error('Password check failed:', error);
-    return false;
-  }
+export async function checkPassword(input: string, hash: string): Promise<boolean> {
+  return await bcrypt.compare(input, hash);
 }
 
 /**
  * Authenticate user with username and password
  */
-export function authenticateUser(username: string, password: string): boolean {
+export async function authenticateUser(username: string, password: string): Promise<boolean> {
   if (username !== AUTH_USERNAME) {
     return false;
   }
 
-  return checkPassword(password, AUTH_PASSWORD as string);
+  return await checkPassword(password, AUTH_PASSWORD as string);
 }
 
 /**

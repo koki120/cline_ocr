@@ -19,7 +19,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     // Authenticate user
-    const isAuthenticated = authenticateUser(username, password);
+    const isAuthenticated = await authenticateUser(username, password);
 
     if (!isAuthenticated) {
       return json(
@@ -35,7 +35,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const headers = new Headers();
     headers.append(
       'Set-Cookie',
-      `token=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${7 * 24 * 60 * 60}` // 7 days
+      `token=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=604800`
     );
 
     return json(

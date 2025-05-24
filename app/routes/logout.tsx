@@ -9,7 +9,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const headers = new Headers();
   headers.append(
     'Set-Cookie',
-    'token=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0'
+    'token=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0'
   );
 
   // Redirect to home page
