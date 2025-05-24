@@ -84,7 +84,7 @@ export default function Index() {
               📚 Textbook OCR App
             </h1>
             <Link
-              to="/editor"
+              to="/protected/editor"
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
               編集履歴
