@@ -139,6 +139,7 @@ export default function Index() {
                 markdown={ocrResult}
                 imageUrl={capturedImage || undefined}
                 isLoading={isProcessing}
+                error={error}
               />
             </div>
           </div>

@@ -38,8 +38,8 @@ export default function Editor() {
     setMarkdown(e.target.value);
   };
 
-  // Handle download
-  const handleDownload = () => {
+  // Handle markdown download
+  const handleDownloadMarkdown = () => {
     if (!selectedResult) return;
 
     // Create a Blob with the markdown content
@@ -53,6 +53,45 @@ export default function Editor() {
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
+    URL.revokeObjectURL(markdownUrl);
+  };
+
+  // Handle ZIP download
+  const handleDownloadZip = async () => {
+    if (!selectedResult) return;
+
+    try {
+      const response = await fetch('/api/download-zip', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ocrResultId: selectedResult.id,
+          markdown: markdown,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('ZIP download failed');
+      }
+
+      // Create a blob from the response
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      // Create a download link and click it
+      const downloadLink = document.createElement('a');
+      downloadLink.href = url;
+      downloadLink.download = `textbook-ocr-${selectedResult.id}.zip`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading ZIP:', error);
+      alert('ZIP ダウンロードに失敗しました。');
+    }
   };
 
   return (
@@ -100,7 +139,7 @@ export default function Editor() {
             <>
               <div className="mb-4">
                 <img
-                  src={`/storage/images/${selectedResult.image_filename}`}
+                  src={`/downloadImage/${selectedResult.image_filename}`}
                   alt="OCR Source"
                   className="max-h-40 border rounded"
                 />
@@ -110,12 +149,18 @@ export default function Editor() {
                 value={markdown}
                 onChange={handleMarkdownChange}
               ></textarea>
-              <div className="mt-4 flex justify-end">
+              <div className="mt-4 flex justify-end space-x-2">
                 <button
                   className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                  onClick={handleDownload}
+                  onClick={handleDownloadMarkdown}
                 >
-                  Download Markdown
+                  Markdownダウンロード
+                </button>
+                <button
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                  onClick={handleDownloadZip}
+                >
+                  ZIPダウンロード
                 </button>
               </div>
             </>
