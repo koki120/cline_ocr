@@ -1,6 +1,7 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { processImageWithVision } from "../lib/visionService";
 import type { OCRRequest } from "../lib/visionService";
+import { requireAuthAPI } from "../lib/auth.guard";
 
 /**
  * API endpoint for OCR processing
@@ -19,6 +20,18 @@ export async function action({ request }: ActionFunctionArgs) {
 	}
 
 	try {
+		// Check authentication
+		const authResult = await requireAuthAPI(request);
+		if (!authResult.authenticated) {
+			return Response.json(
+				{ error: "Authentication required" },
+				{
+					status: 401,
+					headers: { "Content-Type": "application/json" },
+				},
+			);
+		}
+
 		// Parse the request body
 		const body = (await request.json()) as OCRRequest;
 

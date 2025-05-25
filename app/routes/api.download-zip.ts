@@ -3,6 +3,7 @@ import { createReadStream, existsSync, createWriteStream } from "fs";
 import { join } from "path";
 import archiver from "archiver";
 import { getOCRResultById } from "../lib/db.server";
+import { requireAuthAPI } from "../lib/auth.guard";
 
 interface OCRResult {
   id: number;
@@ -23,6 +24,18 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
+    // Check authentication
+    const authResult = await requireAuthAPI(request);
+    if (!authResult.authenticated) {
+      return Response.json(
+        { error: "Authentication required" },
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const body = await request.json();
     const { ocrResultId, markdown } = body;
 

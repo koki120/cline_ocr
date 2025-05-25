@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useLoaderData } from "@remix-run/react";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { getAllOCRResults } from "../lib/db.server";
+import { requireAuth } from "../lib/auth.guard";
 
 // Define OCR result type
 interface OCRResult {
@@ -13,7 +15,10 @@ interface OCRResult {
 /**
  * Loader function to fetch OCR results
  */
-export async function loader() {
+export async function loader({ request }: LoaderFunctionArgs) {
+	// Require authentication for this page
+	await requireAuth(request);
+	
 	const ocrResults = getAllOCRResults() as OCRResult[];
 	return Response.json({ ocrResults });
 }

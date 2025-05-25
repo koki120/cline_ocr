@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
+import { type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, Form } from "@remix-run/react";
 import { getAllOCRResults } from "../../lib/db.server";
-import { verifyToken } from "../../lib/auth.server";
+import { requireAuth } from "../../lib/auth.guard";
 
 // Define OCR result type
 interface OCRResult {
@@ -16,27 +16,8 @@ interface OCRResult {
  * Loader function with authentication guard
  */
 export async function loader({ request }: LoaderFunctionArgs) {
-	// Check authentication
-	const cookieHeader = request.headers.get("Cookie");
-	let isAuthenticated = false;
-
-	if (cookieHeader) {
-		const cookies = Object.fromEntries(
-			cookieHeader.split("; ").map((cookie) => cookie.split("=")),
-		);
-
-		if (cookies.token) {
-			const username = verifyToken(cookies.token);
-			if (username) {
-				isAuthenticated = true;
-			}
-		}
-	}
-
-	// Redirect to login if not authenticated
-	if (!isAuthenticated) {
-		return redirect("/login");
-	}
+	// Require authentication for this page
+	await requireAuth(request);
 
 	// Fetch OCR results if authenticated
 	const ocrResults = getAllOCRResults() as OCRResult[];

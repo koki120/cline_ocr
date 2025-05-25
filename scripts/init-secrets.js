@@ -1,26 +1,16 @@
-/**
- * Securely generate AUTH_USERNAME, AUTH_PASSWORD and JWT_SECRET and update .env file
- * Usage: node scripts/update-env-secrets.js
- */
-
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
-// eslint-disable-next-line no-undef
 const envPath = path.resolve(process.cwd(), ".env");
 
 function generatePassword(length = 16) {
-  return crypto
-    .randomBytes(length)
-    .toString("base64")
-    .replace(/[+/=]/g, "")
-    .slice(0, length);
+  return crypto.randomBytes(length).toString("base64").slice(0, length);
 }
 
 function generateUsername() {
-  const id = crypto.randomBytes(4).toString("hex"); // 8文字
+  const id = crypto.randomBytes(4).toString("hex");
   return `user_${id}`;
 }
 
@@ -31,44 +21,26 @@ function generateSecret(length = 64) {
 // 値生成
 const username = generateUsername();
 const password = generatePassword();
-const passwordHash = bcrypt.hashSync(password, 12);
+const passwordHash = bcrypt.hashSync(password, 10);
 const jwtSecret = generateSecret();
 
-// .env 読み取り
-let env = "";
-try {
-  env = fs.readFileSync(envPath, "utf-8");
-} catch {
-  console.warn("⚠️ .envファイルが存在しないため、新規作成します。");
+if (passwordHash.length !== 60) {
+  throw new Error("⚠ bcrypt ハッシュ長が異常です: " + passwordHash.length);
 }
 
-// 行ごとの置換
-let updatedUsername = false;
-let updatedAuth = false;
-let updatedJwt = false;
+// .env の内容を完全に置き換える
+const newEnvContent =
+  [
+    `AUTH_USERNAME=${username}`,
+    `AUTH_PASSWORD=${passwordHash}`,
+    `JWT_SECRET=${jwtSecret}`,
+  ].join("\n") + "\n";
 
-const newEnv = env.split("\n").map((line) => {
-  if (line.startsWith("AUTH_USERNAME=")) {
-    updatedUsername = true;
-    return `AUTH_USERNAME=${username}`;
-  }
-  if (line.startsWith("AUTH_PASSWORD=")) {
-    updatedAuth = true;
-    return `AUTH_PASSWORD=${passwordHash}`;
-  }
-  if (line.startsWith("JWT_SECRET=")) {
-    updatedJwt = true;
-    return `JWT_SECRET=${jwtSecret}`;
-  }
-  return line;
-});
+// 書き込み
+fs.writeFileSync(envPath, newEnvContent, { encoding: "utf-8" });
 
-if (!updatedUsername) newEnv.push(`AUTH_USERNAME=${username}`);
-if (!updatedAuth) newEnv.push(`AUTH_PASSWORD=${passwordHash}`);
-if (!updatedJwt) newEnv.push(`JWT_SECRET=${jwtSecret}`);
-
-fs.writeFileSync(envPath, newEnv.join("\n"), "utf-8");
-
-console.log("✅ .env ファイルを更新しました。\n");
-console.log("🆔 新しいユーザー名: ", username);
-console.log("🔐 新しい平文パスワード（控えてください）:", password);
+console.log("✅ .env ファイルを完全に再生成しました。\n");
+console.log("🆔 ユーザー名:", username);
+console.log("🔐 平文パスワード（控えてください）:", password);
+console.log("🔒 bcryptハッシュ:", passwordHash);
+console.log("🧪 ハッシュ長さ:", passwordHash.length); // 必ず 60

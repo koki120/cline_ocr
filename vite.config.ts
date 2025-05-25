@@ -9,16 +9,19 @@ declare module "@remix-run/node" {
 }
 
 export default defineConfig({
-	plugins: [
-		remix({
-			future: {
-				v3_fetcherPersist: true,
-				v3_relativeSplatPath: true,
-				v3_throwAbortReason: true,
-				v3_singleFetch: true,
-				v3_lazyRouteDiscovery: true,
-			},
-		}),
-		tsconfigPaths(),
-	],
+  plugins: [
+    remix({
+      future: {
+        v3_fetcherPersist: true,
+        v3_relativeSplatPath: true,
+        v3_throwAbortReason: true,
+        v3_singleFetch: true,
+        v3_lazyRouteDiscovery: true,
+      },
+    }),
+    tsconfigPaths(),
+  ],
+  server: {
+    allowedHosts: ["70f7-133-30-127-240.ngrok-free.app"], // ← ここを追加
+  },
 });

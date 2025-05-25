@@ -1,8 +1,11 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { createReadStream, existsSync } from "fs";
 import { join } from "path";
+import { requireAuth } from "../lib/auth.guard";
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
+	// Require authentication for image access
+	await requireAuth(request);
 	const filename = params["*"];
 
 	if (!filename) {
@@ -37,7 +40,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 			break;
 	}
 
-	return new Response(stream, {
+	return new Response(stream as unknown as ReadableStream, {
 		headers: {
 			"Content-Type": contentType,
 			"Cache-Control": "public, max-age=31536000",
