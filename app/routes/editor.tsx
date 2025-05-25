@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { getAllOCRResults } from "../lib/db.server";
 
@@ -16,7 +15,7 @@ interface OCRResult {
  */
 export async function loader() {
 	const ocrResults = getAllOCRResults() as OCRResult[];
-	return json({ ocrResults });
+	return Response.json({ ocrResults });
 }
 
 /**
@@ -108,7 +107,7 @@ export default function Editor() {
 						<p className="text-gray-500">No OCR results found</p>
 					) : (
 						<ul className="space-y-2">
-							{ocrResults.map((result) => (
+							{ocrResults.map((result: OCRResult) => (
 								<li key={result.id}>
 									<button
 										className={`w-full text-left p-2 rounded ${
