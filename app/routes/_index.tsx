@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
-import { Link, Form } from "@remix-run/react";
+import { Link } from "@remix-run/react";
 import { requireAuth } from "../lib/auth.guard";
 import CameraCapture from "../components/CameraCapture";
 import OCRPreview from "../components/OCRPreview";
@@ -94,7 +94,7 @@ export default function Index() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-800">
-              📚 Textbook OCR App (認証済み)
+              📚 Textbook OCR App
             </h1>
             <div className="flex items-center space-x-2">
               <Link
