@@ -1,22 +1,22 @@
-import { redirect, type ActionFunctionArgs } from '@remix-run/node';
+import { redirect, type ActionFunctionArgs } from "@remix-run/node";
 
 export async function action({ request }: ActionFunctionArgs) {
-  if (request.method !== 'POST') {
-    return redirect('/');
-  }
+	if (request.method !== "POST") {
+		return redirect("/");
+	}
 
-  // Clear the authentication cookie
-  const headers = new Headers();
-  headers.append(
-    'Set-Cookie',
-    'token=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0'
-  );
+	// Clear the authentication cookie
+	const headers = new Headers();
+	headers.append(
+		"Set-Cookie",
+		"token=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0",
+	);
 
-  // Redirect to home page
-  return redirect('/', { headers });
+	// Redirect to home page
+	return redirect("/", { headers });
 }
 
 // If someone tries to access logout via GET, redirect to home
 export async function loader() {
-  return redirect('/');
+	return redirect("/");
 }
