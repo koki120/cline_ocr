@@ -7,6 +7,7 @@ interface CameraCaptureProps {
 export default function CameraCapture({ onCapture }: CameraCaptureProps) {
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [isCapturing, setIsCapturing] = useState(false);
 	const [isCameraActive, setIsCameraActive] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -75,6 +76,24 @@ export default function CameraCapture({ onCapture }: CameraCaptureProps) {
 		setIsCapturing(false);
 	};
 
+	// Handle file input (for iPhone/mobile fallback)
+	const handleImageCapture = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (!file) return;
+
+		const reader = new FileReader();
+		reader.onload = (e) => {
+			const imageBase64 = e.target?.result as string;
+			onCapture(imageBase64);
+		};
+		reader.readAsDataURL(file);
+	};
+
+	// Trigger file input
+	const triggerFileInput = () => {
+		fileInputRef.current?.click();
+	};
+
 	// Clean up on unmount
 	useEffect(() => {
 		return () => {
@@ -102,33 +121,56 @@ export default function CameraCapture({ onCapture }: CameraCaptureProps) {
 				{/* Canvas for capturing (hidden) */}
 				<canvas ref={canvasRef} className="hidden" />
 
-				{/* Camera controls */}
-				<div className="mt-4 flex justify-between">
-					{!isCameraActive ? (
-						<button
-							className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-							onClick={startCamera}
-						>
-							カメラを起動
-						</button>
-					) : (
-						<>
-							<button
-								className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-								onClick={stopCamera}
-							>
-								カメラを停止
-							</button>
+				{/* Hidden file input for iPhone camera */}
+				<input
+					ref={fileInputRef}
+					type="file"
+					accept="image/*"
+					capture="environment"
+					onChange={handleImageCapture}
+					className="hidden"
+				/>
 
+				{/* Camera controls */}
+				<div className="mt-4 space-y-2">
+					{/* File input button for iPhone/mobile */}
+					<div className="w-full">
+						<button
+							className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+							onClick={triggerFileInput}
+						>
+							📱 写真を撮影 (iPhone対応)
+						</button>
+					</div>
+
+					{/* Traditional camera controls */}
+					<div className="flex justify-between">
+						{!isCameraActive ? (
 							<button
 								className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-								onClick={captureImage}
-								disabled={isCapturing}
+								onClick={startCamera}
 							>
-								{isCapturing ? "処理中..." : "撮影"}
+								🎥 カメラを起動
 							</button>
-						</>
-					)}
+						) : (
+							<>
+								<button
+									className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+									onClick={stopCamera}
+								>
+									カメラを停止
+								</button>
+
+								<button
+									className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+									onClick={captureImage}
+									disabled={isCapturing}
+								>
+									{isCapturing ? "処理中..." : "撮影"}
+								</button>
+							</>
+						)}
+					</div>
 				</div>
 			</div>
 		</div>
